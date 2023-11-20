@@ -1,9 +1,4 @@
 import json
-
-from openpyxl.drawing.image import Image
-from PIL import Image
-from io import BytesIO
-import requests
 import openpyxl
 
 with open('klinker.json', 'r', encoding='utf8') as file:
@@ -20,7 +15,6 @@ sheet['D1'] = 'Характеристики'
 sheet['E1'] = 'Ссылка на товар'
 sheet['F1'] = 'Ссылка на изображение'
 
-# dict_haract = []
 row = 2
 for product in data:
     sheet[row][0].value = product['Артикул']

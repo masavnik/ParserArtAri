@@ -4,27 +4,26 @@ import scrapy
 class CatalogSpider(scrapy.Spider):
     name = "catalog"
     allowed_domains = ["art-ari.ru"]
-    start_urls = [f'https://art-ari.ru/katalog/klinker/?page={i}' for i in range(29 + 1)][:5]
+    start_urls = [f'https://art-ari.ru/katalog/keramogranit/?page={i}' for i in range(29 + 1)][:2]
 
     def start_requests(self):
         for i in range(len(self.start_urls)):
             if i == 0:
-                yield scrapy.Request('https://art-ari.ru/katalog/klinker/', callback=self.parse_in_categories)
+                yield scrapy.Request('https://art-ari.ru/katalog/keramogranit/', callback=self.parse_in_categories)
             else:
                 yield scrapy.Request(self.start_urls[i], callback=self.parse_in_categories)
 
     def parse_in_categories(self, response):
         for href in response.css('div.h4 a::attr("href")').extract():
             yield response.follow(href, callback=self.parse)
+        #
+        # for collections in response.css('div.item.subcat-box.col-md-4.col-sm-4.col-xs-12 a::attr(href)').extract():
+        #     yield response.follow(collections, callback=self.parse)
 
     def parse(self, response, **kwargs):
-
-        a = ['Вес коробки, кг', 'Единица измерения', 'Назначение', 'Площадь, м2', 'Производитель', 'Размер, см',
-             'Ректификат', 'Рисунок', 'Страна', 'Толщина, мм', 'Форма', 'Коллекция', 'Кол-во плитки в коробке, шт.',
-             'Поверхность', 'Цвет', 'Помещение']
-        article = 'Нет' if None is response.css(
-            'li.product-info-li.main-product-sku strong::text').get() else response.css(
-            'li.product-info-li.main-product-sku strong::text').get()
+        # article = 'Нет Арти' if None is response.css(
+        #     'li.product-info-li.main-product-sku strong::text').get() else response.css(
+        #     'li.product-info-li.main-product-sku strong::text').get()
 
         name_product = response.css('h1.product-header::text').get()
         price = 'Цена по запросу' if None is response.css('div.oct-price-normal::text').get() else response.css(
@@ -47,7 +46,7 @@ class CatalogSpider(scrapy.Spider):
         characteristics = dict(zip(response.css('div.attr-td.oct-attr-name span::text').extract(),
                                    response.css('div.attr-td::text').extract()))
         item = {
-            'Артикул': article,
+            'Артикул': name_product.split()[1],
             'Название': name_product,
             'Цена': price,
             'Производитель': manufacturer,
@@ -71,11 +70,33 @@ class CatalogSpider(scrapy.Spider):
             'Cсылка на товар': link_product,
             'Ссылка на изображение': link_img,
             'Ссылка на коллекцию': link_collection,
+            # 'Ссылка изображения на коллекцию': response.css('li.image.thumbnails-one.thumbnail a::attr(href)').get()
         }
 
         yield item
 
-# Попробовать достать изображения логотипа
-# Достать производителя
-# Достать Коллекцию
-# Каждый столбец отдельная характеристика
+
+# class CatalogSpider(scrapy.Spider):
+#     name = "catalog"
+#     allowed_domains = ["art-ari.ru"]
+#     start_urls = [f'https://art-ari.ru/katalog/keramogranit/?page={i}' for i in range(2 + 1)]
+#
+#     def start_requests(self):
+#         for i in range(len(self.start_urls)):
+#             if i == 0:
+#                 yield scrapy.Request('https://art-ari.ru/katalog/keramogranit/', callback=self.parse_in_categories)
+#             else:
+#                 yield scrapy.Request(self.start_urls[i], callback=self.parse_in_categories)
+#
+#     def parse_in_categories(self, response):
+#         for collections in response.css('div.item.subcat-box.col-md-4.col-sm-4.col-xs-12 a::attr(href)').extract():
+#             yield response.follow(collections, callback=self.parse)
+#
+#     def parse(self, response, **kwargs):
+#         item = {
+#             'Имя коллекции': response.css('h1.cat-header::text').get(),
+#             'Главное изображение': response.css('li.image.thumbnails-one.thumbnail a::attr(href)').get(),
+#             'Дополнительные изображения': '\n'.join(response.css('div.image-additional a::attr(href)').extract())
+#         }
+#
+#         yield item
