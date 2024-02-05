@@ -65,3 +65,4 @@ class CatalogSpider(scrapy.Spider):
         }
 
         yield item
+print('Hello')
